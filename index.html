@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Gök Muhafızı</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;700;800&family=Saira:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <canvas id="lines"></canvas>
+  <div id="grade"></div><div id="vig"></div>
+  <div id="hud" class="hidden">
+    <div id="vitals">
+      <div id="lvl" aria-label="Seviye">1</div>
+      <div class="bars">
+        <div class="bar slant" id="hpBar"><i></i><b id="hpT">100</b></div>
+        <div class="bar slant" id="enBar"><i></i><b id="enT">100</b></div>
+        <div class="bar slant" id="xpBar"><i></i></div>
+        <div id="money">₺ 10.000</div>
+      </div>
+    </div>
+    <div id="obj" class="slant hidden"><div id="objName"></div><div id="objLine"></div><div id="objDist"></div></div>
+    <div id="boss" class="hidden"><span>Dev mekanik</span><div class="bar slant"><i id="bossFill"></i></div></div>
+    <canvas id="minimap" width="180" height="180"></canvas>
+    <div id="lockR" class="hidden"><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i><b id="lockD"></b></div>
+    <div id="vbars"></div><div id="milbar" class="hidden"></div>
+    <div id="kills"><span>Öldürülen insan</span><b id="killsV">0</b></div>
+    <div id="cross"><i id="hitM"></i></div>
+    <div id="speed"><div id="speedV">0<small>km/sa</small></div><div id="speedM">Yürüyüş</div><div id="destroyed">Yıkılan bina: 0</div></div>
+    <div id="slots">
+      <div class="slot slant ult" id="ultSlot" style="display:none"><div class="k">G</div><div class="n">Yok Oluş</div></div><div class="slot slant" data-i="0" style="display:none"><div class="k"></div><div class="n"></div><div class="cd"></div></div>
+      <div class="slot slant" data-i="1"><div class="k">Sol tık / E</div><div class="n">Süper yumruk</div><div class="cd"></div></div>
+      <div class="slot slant" data-i="2"><div class="k">Sağ tık</div><div class="n">Isı lazeri</div><div class="cd"></div></div>
+      <div class="slot slant" data-i="3"><div class="k">Q</div><div class="n" data-lock="Seviye 2'de açılır">Şok dalgası</div><div class="cd"></div></div>
+    </div>
+    <div id="toasts"></div>
+    <div id="banner"><div id="bT"></div><div id="bS"></div></div>
+  </div>
+
+  <div id="touch" class="hidden">
+    <div id="stickBase"><div id="stickKnob"></div></div>
+    <div id="tbtns">
+      <button class="tb" data-k="KeyE" data-cd="1">Yumruk</button><button class="tb" data-m="R" data-cd="2">Lazer</button>
+      <button class="tb" data-k="KeyQ" data-cd="3">Şok</button><button class="tb" data-k="KeyF">Uç / in</button><button class="tb" data-k="KeyC">Alçal</button>
+      <button class="tb" data-k="KeyG" style="display:none">Yok Oluş</button><button class="tb" data-k="KeyX" style="display:none">Titreş</button><button class="tb" data-k="KeyZ">Araba</button><button class="tb" data-k="KeyB" style="display:none">Otur</button><button class="tb" data-k="KeyL" style="display:none">Uzan</button><button class="tb" data-k="Digit1" style="display:none">Saldır</button><button class="tb" data-k="Digit2" style="display:none">Dur</button><button class="tb" data-k="Digit3" style="display:none">Dağıt</button><button class="tb big" data-k="Space">Zıpla<br><small>havada: yüksel</small></button>
+    </div>
+    <div id="ttop"><button class="tb sm" id="tLock">Kilit</button><button class="tb sm" id="tFP">Kamera</button><button class="tb sm" data-k="KeyT">Sivil</button><button class="tb sm" id="tPause" aria-label="Duraklat">II</button></div>
+  </div>
+  <div id="rotate"><div>Daha iyi bir deneyim için telefonunu yatay çevir</div></div>
+  <div id="menu" class="screen">
+    <div class="menuIn">
+      <h1 class="title"><span>Gök</span><span>Muhafızı</span></h1>
+      <p class="lede">Şehir senin oyun alanın. 20.000 insanın yaşadığı canlı bir şehirde istediğin kahramanı seç, gökdelenlerin arasında ses hızını aş ve dilediğin gibi dolaş.</p>
+      <div class="row"><button class="btn" id="playBtn">Oyuna başla</button><button class="btn alt" id="menuMap">Harita</button><button class="btn alt" id="menuNet">Çok Oyuncu</button><button class="btn alt" id="menuSettings">Ayarlar</button><button class="btn alt" id="menuHeroes">Kahramanlar</button><button class="btn alt" id="menuCos">Kostüm</button><button class="btn alt" id="menuShop">Mağaza</button><button class="btn alt" id="menuUp">Geliştirmeler</button></div>
+      <dl class="keys">
+        <dt>WASD + fare</dt><dd>Hareket ve kamera</dd>
+        <dt>Shift</dt><dd>Süper hız, uçarken süpersonik uçuş</dd>
+        <dt>Space</dt><dd>Süper zıplama, havada tekrar bas: uç, uçarken yüksel</dd>
+        <dt>C · F</dt><dd>Alçal veya in · Uçuşu aç/kapat</dd>
+        <dt>Sol tık / E</dt><dd>Süper yumruk, art arda bas: kombo</dd>
+        <dt>Sağ tık · Q</dt><dd>Isı lazeri · Şok dalgası</dd>
+        <dt>M</dt><dd>Mağaza</dd>
+        <dt>V</dt><dd>Birinci şahıs / üçüncü şahıs kamera</dd>
+        <dt>G</dt><dd>Hiçlik ile: Yok Oluş / Diriliş</dd>
+        <dt>R</dt><dd>Kötü karaktere kilitlen / kilidi aç</dd>
+        <dt>X</dt><dd>Rüzgâr ile: Titreşim (duvarlardan geç, hasar alma)</dd>
+        <dt>B / L</dt><dd>Zerre ile: Otur / Uzan</dd>
+        <dt>↑ ↓ / [ ] / 1-0</dt><dd>Kesici lazer gücü: ok tuşları ya da [ ] ile 20'ye kadar ayar</dd>
+        <dt>1 / 2 / 3</dt><dd>İkiz ile: klonlara saldır / yanımda dur / dağıl</dd>
+        <dt>Z</dt><dd>Yakındaki arabayı kaldır / fırlat</dd>
+        <dt>H</dt><dd>Hava durumunu değiştir</dd>
+        <dt>N</dt><dd>Günün saatini değiştir</dd>
+        <dt>O</dt><dd>Fotoğraf modu</dd>
+        <dt>T</dt><dd>Kostümü çıkar ve sivil gibi yürü, tekrar bas: kahramana dönüş</dd>
+        <dt>Tab · K · Esc</dt><dd>Geliştirmeler · Kostüm · Duraklat</dd>
+      </dl>
+      <p class="note" id="touchNote">Bu oyun klavye ve fare ile oynanmak üzere tasarlandı. İlerlemen bu tarayıcıda otomatik kaydedilir.</p>
+    </div>
+  </div>
+
+  <div id="pause" class="screen hidden">
+    <div class="card">
+      <h2>Duraklatıldı</h2>
+      <p>Şehir seni bekliyor.</p>
+      <div class="todbox"><div class="todlbl">Günün saati</div><div class="todrow"><button type="button" class="tod" data-t="0.3">Sabah</button><button type="button" class="tod" data-t="0.5">Öğle</button><button type="button" class="tod" data-t="0.66">Akşamüstü</button><button type="button" class="tod" data-t="0.735">Gün batımı</button><button type="button" class="tod" data-t="0">Gece</button></div><label class="todchk"><input type="checkbox" id="todCycle"> Gün döngüsü: zaman kendiliğinden aksın (bir gün 15 dakika)</label></div>
+      <label class="todchk" style="margin:4px 0 2px"><input type="checkbox" id="postOn" checked> Sinematik grafik: ışık parlaması ve film tonlaması</label><div id="postNote" style="font-size:12px;color:var(--muted);margin-bottom:10px"></div>
+      <div class="todbox"><div class="todlbl">Hava durumu</div><div class="todrow"><button type="button" class="wx" data-w="0">Açık</button><button type="button" class="wx" data-w="1">Yağmurlu</button><button type="button" class="wx" data-w="2">Fırtına</button><button type="button" class="wx" data-w="3">Karlı</button></div></div>
+      <div class="todbox"><div class="todlbl">Grafik kalitesi</div><div class="todrow" id="qualRow"></div></div>
+      <div class="todbox"><div class="todlbl">Kötülerin saldırganlığı</div><div class="todrow" id="aggRow"></div></div>
+      <div id="statsBox" class="statsbox"></div>
+      <div class="vols"><label class="sens">Ana ses<input id="vMaster" type="range" min="0" max="1" step="0.05"></label><label class="sens">Müzik<input id="vMusic" type="range" min="0" max="1" step="0.05"></label><label class="sens">Efektler<input id="vSfx" type="range" min="0" max="1" step="0.05"></label></div>
+      <label class="sens">Fare hassasiyeti<input id="sens" type="range" min="0.6" max="2.4" step="0.1" value="1"></label>
+      <div class="row"><button class="btn" id="resumeBtn">Devam et</button><button class="btn alt" id="pauseMap">Harita</button><button class="btn alt" id="pauseHeroes">Kahramanlar</button><button class="btn alt" id="pauseCos">Kostüm</button><button class="btn alt" id="pauseShop">Mağaza</button><button class="btn alt" id="pauseUp">Geliştirmeler</button></div>
+    </div>
+  </div>
+
+  <div id="upgrades" class="screen hidden">
+    <div class="card">
+      <h2>Geliştirmeler</h2>
+      <p id="upPoints">Geliştirme puanı: 0</p>
+      <div id="upList"></div>
+      <div id="upMsg"></div>
+      <div class="row" style="margin-top:14px"><button class="btn" id="upClose">Kapat</button></div>
+    </div>
+  </div>
+
+  <div id="costume" class="screen hidden">
+    <div class="card cos">
+      <h2>Kostüm</h2>
+      <p>Hazır bir kostüm seç ya da her parçanın rengini kendin belirle. Değişiklikler anında görünür ve kaydedilir.</p>
+      <div class="presets" id="presets"></div>
+      <div class="cgrid">
+        <label>Kostüm<input type="color" id="cc_suit"></label>
+        <label>Eldiven, çizme, kemer<input type="color" id="cc_acc"></label>
+        <label>Pelerin<input type="color" id="cc_cape"></label>
+        <label>Maske<input type="color" id="cc_mask"></label>
+        <label>Saç<input type="color" id="cc_hair"></label>
+        <label>Enerji ışıkları<input type="color" id="cc_energy"></label>
+        <label>Sivil tişört<input type="color" id="cc_civShirt"></label>
+        <label>Sivil pantolon<input type="color" id="cc_civPants"></label>
+        <label>Sivil ayakkabı<input type="color" id="cc_civShoe"></label>
+      </div>
+      <div class="row toggles"><label><input type="checkbox" id="cc_capeOn"> Pelerin</label><label><input type="checkbox" id="cc_maskOn"> Maske</label><label><input type="checkbox" id="cc_civOn"> Sivil kılık</label></div>
+      <div class="row"><button class="btn" id="cosClose">Tamam</button></div>
+    </div>
+  </div>
+  <div id="settings" class="screen hidden">
+    <div class="card">
+      <h2>Ayarlar</h2>
+      <div class="todbox"><div class="todlbl">Grafik kalitesi</div><div class="todrow" id="qualRowSet"></div></div>
+      <div id="qualNote" style="font-size:13px;color:var(--muted);margin:6px 0 12px"></div>
+      <label class="todchk" style="margin:4px 0"><input type="checkbox" id="postOnSet"> Sinematik grafik (ışık parlaması, film tonu) — Yüksek kalitede açık</label>
+      <div class="todbox"><div class="todlbl">Günün saati</div><div class="todrow">
+        <button type="button" class="tod" data-t="0.3">Sabah</button><button type="button" class="tod" data-t="0.5">Öğle</button><button type="button" class="tod" data-t="0.66">Akşamüstü</button><button type="button" class="tod" data-t="0.735">Gün batımı</button><button type="button" class="tod" data-t="0">Gece</button></div></div>
+      <div class="row" style="margin-top:14px"><button class="btn" id="settingsClose">Tamam</button></div>
+    </div>
+  </div>
+  <div id="net" class="screen hidden">
+    <div class="card">
+      <h2>Çok Oyuncu (deneysel)</h2>
+      <p>Arkadaşınla aynı dünyada oynayın. Biri <b>Oda Kur</b> der, çıkan kodu söyler; diğeri kodu yazıp <b>Katıl</b> der. Claude hesabı gerekmez. İnternet bağlantısı ve karşı tarafın ağının izin vermesi gerekir; her ağda çalışmayabilir.</p>
+      <div class="row" style="margin:6px 0"><button class="btn" id="netHostBtn">Oda Kur</button><div id="netCodeBig" style="font:800 30px var(--display);letter-spacing:4px;color:var(--gold);min-width:90px;text-align:center"></div></div>
+      <div class="row" style="margin:6px 0"><input id="netJoinInput" placeholder="ODA KODU" maxlength="6" style="text-transform:uppercase;font:700 18px var(--display);letter-spacing:3px;padding:8px 12px;width:130px;background:rgba(238,243,250,.08);border:1px solid var(--line);color:var(--paper)"><button class="btn" id="netJoinBtn">Katıl</button></div>
+      <label class="todchk" style="margin:4px 0"><input type="checkbox" id="netPvp"> Birbirimizle dövüşebilelim (PvP)</label>
+      <div id="netStatus" style="font-size:13px;color:var(--muted);margin:8px 0;min-height:34px"></div>
+      <div class="row"><button class="btn alt" id="netClose">Kapat</button></div>
+    </div>
+  </div>
+  <div id="maps" class="screen hidden">
+    <div class="card hlib">
+      <h2>Harita</h2>
+      <p>Nerede oynamak istediğini seç. Değişiklik hemen uygulanır.</p>
+      <div id="mapList" class="maplist"></div>
+      <div class="row" style="margin-top:16px"><button class="btn" id="mapClose">Tamam</button></div>
+    </div>
+  </div>
+  <div id="heroes" class="screen hidden">
+    <div class="card hlib">
+      <h2>Kahramanlar</h2>
+      <p>Kahramanını seç. Her birinin kendi gücü, hızı ve yetenekleri var. Kostüm ekranında her kahramanın renklerini ayrı ayrı değiştirebilirsin.</p>
+      <div id="vilRow"></div><div id="heroList"></div>
+      <div class="row" style="margin-top:16px"><button class="btn" id="heroClose">Tamam</button></div>
+    </div>
+  </div>
+  <div id="shop" class="screen hidden">
+    <div class="card">
+      <h2>Mağaza</h2>
+      <div id="shopBal">₺ 0</div>
+      <p>Şehirde yaptığın her yıkım deneyim kazandırır. Başlangıç bütçen dilediğin gibi harcaman için.</p>
+      <div id="shopList"></div>
+      <div id="shopMsg" style="min-height:20px;font-size:13px;color:var(--gold);margin-top:12px"></div>
+      <div class="row" style="margin-top:14px"><button class="btn" id="shopClose">Kapat</button></div>
+    </div>
+  </div>
+  <div id="dead" class="screen hidden">
+    <div class="card"><h2 style="transform:none">Yere indirildin</h2><p>Kahramanlar her zaman geri döner.</p><div id="deadT">3</div></div>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
